@@ -4,9 +4,9 @@ import argparse
 
 def main(input_file, output_file=None):
     """
-    Removes lines starting with // or /// (with optional leading spaces or tabs)
-    and lines containing non-printable characters from the input file, and writes
-    the cleaned content to the output file. If the output file is not specified,
+    Removes lines starting with // or /// (with optional leading spaces or tabs),
+    lines containing non-printable characters, and empty lines from the input file.
+    Writes the cleaned content to the output file. If the output file is not specified,
     the script generates the output file name by appending '-stripped' to the 
     input file name.
     
@@ -35,6 +35,10 @@ def main(input_file, output_file=None):
         if not all(32 <= ord(char) <= 126 or char in '\t\n\r' for char in line):
             continue
         
+        # Skip empty lines
+        if not trimmed_line.strip():
+            continue
+        
         cleaned_lines.append(line)
     
     with open(output_file, 'w', encoding='utf-8') as outfile:
@@ -43,7 +47,7 @@ def main(input_file, output_file=None):
     print(f'Processed {input_file} and saved to {output_file}')
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Strip comments and non-printable lines from a file.")
+    parser = argparse.ArgumentParser(description="Strip comments, non-printable lines, and empty lines from a file.")
     parser.add_argument('-i', '--input', required=True, help="The path to the input file")
     parser.add_argument('-o', '--output', help="The path to the output file (optional)")
     
