@@ -7,11 +7,11 @@ SET WORKDIR=C:\VSS Client
 
 cd /d "%WORKDIR%"
 
-SS Create "$/TestApp" %SSLOGIN% -C "Main test application"
-SS Create "$/TestApp/Source" %SSLOGIN% -C "Source code"  
-SS Create "$/TestApp/Resources" %SSLOGIN% -C "Binary resources"
-SS Create "$/TestApp/Docs" %SSLOGIN% -C "Documentation"
-SS Create "$/TestApp/Shared" %SSLOGIN% -C "Shared components"
+SS Create "$/TestApp" %SSLOGIN% -C"Main test application"
+SS Create "$/TestApp/Source" %SSLOGIN% -C"Source code"  
+SS Create "$/TestApp/Resources" %SSLOGIN% -C"Binary resources"
+SS Create "$/TestApp/Docs" %SSLOGIN% -C"Documentation"
+SS Create "$/TestApp/Shared" %SSLOGIN% -C"Shared components"
 
 echo program TestApp; > TestApp.dpr
 echo {Test application for VSS migration} >> TestApp.dpr
@@ -89,21 +89,21 @@ echo File for permanent destruction > DestroyMe.txt
 echo File to be purged after deletion > PurgeMe.txt
 
 SS CP "$/TestApp/Source/" %SSLOGIN%
-SS Add TestApp.dpr %SSLOGIN% -C "Main project file"
-SS Add MainUnit.pas %SSLOGIN% -C "Главен модул с българско съдържание"
+SS Add TestApp.dpr %SSLOGIN% -C"Main project file"
+SS Add MainUnit.pas %SSLOGIN% -C"Главен модул с българско съдържание"
 
 SS CP "$/TestApp/Shared/" %SSLOGIN%
-SS Add SharedUtils.pas %SSLOGIN% -C "Shared utility module"
+SS Add SharedUtils.pas %SSLOGIN% -C"Shared utility module"
 
 SS CP "$/TestApp/Resources/" %SSLOGIN%
-SS Add app.ico %SSLOGIN% -C "Application icon"
+SS Add app.ico %SSLOGIN% -C"Application icon"
 SS Filetype "$/TestApp/Resources/app.ico" -B %SSLOGIN%
 
 SS CP "$/TestApp/Docs/" %SSLOGIN%
-SS Add README.txt %SSLOGIN% -C "Project documentation"
-SS Add TempFile.txt %SSLOGIN% -C "File for deletion test"
-SS Add DestroyMe.txt %SSLOGIN% -C "File for destroy test"
-SS Add PurgeMe.txt %SSLOGIN% -C "File for purge test"
+SS Add README.txt %SSLOGIN% -C"Project documentation"
+SS Add TempFile.txt %SSLOGIN% -C"File for deletion test"
+SS Add DestroyMe.txt %SSLOGIN% -C"File for destroy test"
+SS Add PurgeMe.txt %SSLOGIN% -C"File for purge test"
 
 REM Get all files with proper directory structure - using working pattern
 mkdir TestApp
@@ -114,7 +114,7 @@ echo Y | SS Get *.* -R -I-Y %SSLOGIN%
 REM Create version history
 cd Source
 SS CP "$/TestApp/Source/" %SSLOGIN%
-SS Checkout MainUnit.pas %SSLOGIN% -C "Adding new functionality"
+SS Checkout MainUnit.pas %SSLOGIN% -C"Adding new functionality"
 echo     procedure ShowAbout; >> MainUnit.pas
 echo. >> MainUnit.pas
 echo procedure TMainForm.ShowAbout; >> MainUnit.pas
@@ -124,26 +124,26 @@ echo begin >> MainUnit.pas
 echo   tmpAbout := 'Test App v1.1 - Тест приложение v1.1'; >> MainUnit.pas
 echo   ShowMessage(tmpAbout); >> MainUnit.pas
 echo end; >> MainUnit.pas
-SS Checkin MainUnit.pas %SSLOGIN% -C "Добавена About функция"
+SS Checkin MainUnit.pas %SSLOGIN% -C"Добавена About функция"
 
 cd ..
 SS CP "$/TestApp" %SSLOGIN%
-echo v1.0 | SS Label . %SSLOGIN% -C "Първа версия"
+echo v1.0 | SS Label . %SSLOGIN% -C"Първа версия"
 
 REM Test file sharing
 SS CP "$/TestApp/Source" %SSLOGIN%
-SS Share "$/TestApp/Shared/SharedUtils.pas" %SSLOGIN% -C "Share utils to main source"
+SS Share "$/TestApp/Shared/SharedUtils.pas" %SSLOGIN% -C"Share utils to main source"
 
 REM Check links
 SS Links SharedUtils.pas %SSLOGIN%
 
 REM Create branch project
-SS Create "$/TestApp_Branch" %SSLOGIN% -C "Branch project"
+SS Create "$/TestApp_Branch" %SSLOGIN% -C"Branch project"
 SS CP "$/TestApp_Branch" %SSLOGIN%
-SS Share "$/TestApp/Source" -E %SSLOGIN% -C "Branch Source"
-SS Share "$/TestApp/Shared" -E %SSLOGIN% -C "Branch Shared"
-SS Share "$/TestApp/Resources" -E %SSLOGIN% -C "Branch Resources"
-SS Share "$/TestApp/Docs" -E %SSLOGIN% -C "Branch Docs"
+SS Share "$/TestApp/Source" -E %SSLOGIN% -C"Branch Source"
+SS Share "$/TestApp/Shared" -E %SSLOGIN% -C"Branch Shared"
+SS Share "$/TestApp/Resources" -E %SSLOGIN% -C"Branch Resources"
+SS Share "$/TestApp/Docs" -E %SSLOGIN% -C"Branch Docs"
 
 cd ..
 mkdir TestApp_Branch
@@ -153,7 +153,7 @@ echo Y | SS Get *.* -R -I-Y %SSLOGIN%
 
 cd Source
 SS CP "$/TestApp_Branch/Source" %SSLOGIN%
-SS Checkout MainUnit.pas %SSLOGIN% -C "Branch modifications"
+SS Checkout MainUnit.pas %SSLOGIN% -C"Branch modifications"
 echo     procedure ShowBranchInfo; >> MainUnit.pas
 echo. >> MainUnit.pas
 echo procedure TMainForm.ShowBranchInfo; >> MainUnit.pas
@@ -163,12 +163,12 @@ echo begin >> MainUnit.pas
 echo   tmpBranchInfo := 'Branch feature - Функция от клона'; >> MainUnit.pas
 echo   ShowMessage(tmpBranchInfo); >> MainUnit.pas
 echo end; >> MainUnit.pas
-SS Checkin MainUnit.pas %SSLOGIN% -C "Промени в клона"
+SS Checkin MainUnit.pas %SSLOGIN% -C"Промени в клона"
 
 cd ..\..
 cd TestApp\Shared
 SS CP "$/TestApp/Shared" %SSLOGIN%
-SS Checkout SharedUtils.pas %SSLOGIN% -C "Modify shared file"
+SS Checkout SharedUtils.pas %SSLOGIN% -C"Modify shared file"
 echo function GetCurrentTime: string; >> SharedUtils.pas
 echo var >> SharedUtils.pas
 echo   tmpTime: string; >> SharedUtils.pas
@@ -176,44 +176,44 @@ echo begin >> SharedUtils.pas
 echo   tmpTime := TimeToStr(Now); >> SharedUtils.pas
 echo   Result := tmpTime; >> SharedUtils.pas
 echo end; >> SharedUtils.pas
-SS Checkin SharedUtils.pas %SSLOGIN% -C "Добавена функция за време"
+SS Checkin SharedUtils.pas %SSLOGIN% -C"Добавена функция за време"
 
 cd ..
 SS CP "$/TestApp" %SSLOGIN%
-echo before-merge | SS Label . %SSLOGIN% -C "Преди merge"
+echo before-merge | SS Label . %SSLOGIN% -C"Преди merge"
 
 cd Source
 SS CP "$/TestApp/Source" %SSLOGIN%
-SS Checkout MainUnit.pas %SSLOGIN% -C "Prepare for merge"
-SS Merge "$/TestApp_Branch/Source/MainUnit.pas" MainUnit.pas %SSLOGIN% -C "Merge branch to main"
-SS Checkin MainUnit.pas %SSLOGIN% -C "Merged changes"
+SS Checkout MainUnit.pas %SSLOGIN% -C"Prepare for merge"
+SS Merge "$/TestApp_Branch/Source/MainUnit.pas" MainUnit.pas %SSLOGIN% -C"Merge branch to main"
+SS Checkin MainUnit.pas %SSLOGIN% -C"Merged changes"
 
 cd ..
 SS CP "$/TestApp" %SSLOGIN%
-echo after-merge | SS Label . %SSLOGIN% -C "След merge"
+echo after-merge | SS Label . %SSLOGIN% -C"След merge"
 
 cd Docs
 SS CP "$/TestApp/Docs" %SSLOGIN%  
-SS Delete TempFile.txt %SSLOGIN% -C "Regular deletion"
-SS Destroy DestroyMe.txt %SSLOGIN%
-SS Delete PurgeMe.txt %SSLOGIN% -C "Delete for purge"
+SS Delete TempFile.txt %SSLOGIN%
+echo Y | SS Destroy DestroyMe.txt %SSLOGIN%
+SS Delete PurgeMe.txt %SSLOGIN%
 SS Purge PurgeMe.txt %SSLOGIN%
 SS Dir -D %SSLOGIN%
-SS Recover TempFile.txt %SSLOGIN% -C "Recover deleted file"
+SS Recover TempFile.txt %SSLOGIN%
 
 cd ..\Source
 SS CP "$/TestApp/Source" %SSLOGIN%
-SS Checkout TestApp.dpr %SSLOGIN% -C "Final update"
+SS Checkout TestApp.dpr %SSLOGIN% -C"Final update"
 echo   WriteLn('Final version - Финална версия 1.2'); >> TestApp.dpr
-SS Checkin TestApp.dpr %SSLOGIN% -C "Финална версия"
+SS Checkin TestApp.dpr %SSLOGIN% -C"Финална версия"
 
 cd ..
 SS CP "$/TestApp" %SSLOGIN%
-echo v1.2-final | SS Label . %SSLOGIN% -C "Финална версия"
+echo v1.2-final | SS Label . %SSLOGIN% -C"Финална версия"
 
 cd ..\TestApp_Branch
 SS CP "$/TestApp_Branch" %SSLOGIN%
-echo branch-final | SS Label . %SSLOGIN% -C "Финална версия клон"
+echo branch-final | SS Label . %SSLOGIN% -C"Финална версия Branch"
 
 cd "%WORKDIR%"
 echo.
