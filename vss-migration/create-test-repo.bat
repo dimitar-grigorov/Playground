@@ -160,10 +160,10 @@ echo procedure TMainForm.ShowBranchInfo; >> MainUnit.pas
 echo var >> MainUnit.pas
 echo   tmpBranchInfo: string; >> MainUnit.pas
 echo begin >> MainUnit.pas
-echo   tmpBranchInfo := 'Branch feature - Функция от клона'; >> MainUnit.pas
+echo   tmpBranchInfo := 'Branch feature - Функция от branch-a'; >> MainUnit.pas
 echo   ShowMessage(tmpBranchInfo); >> MainUnit.pas
 echo end; >> MainUnit.pas
-SS Checkin MainUnit.pas %SSLOGIN% -C"Промени в клона"
+SS Checkin MainUnit.pas %SSLOGIN% -C"Промени в branch-a"
 
 cd ..\..
 cd TestApp\Shared
