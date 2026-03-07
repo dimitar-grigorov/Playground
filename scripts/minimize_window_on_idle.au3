@@ -23,8 +23,9 @@ Opt("TrayOnEventMode", 1)
 TraySetIcon("shell32.dll", 46)
 TraySetToolTip("MinimizeOnIdle — Running")
 
-Local $menuPause = TrayItemCreate("Pause",  $TRAY_ITEM_NORMAL)
-Local $menuExit  = TrayItemCreate("Exit",   $TRAY_ITEM_NORMAL)
+Local $menuPause = TrayCreateItem("Pause")
+TrayCreateItem("")  ; separator
+Local $menuExit  = TrayCreateItem("Exit")
 
 TrayItemSetOnEvent($menuPause, "_OnPauseToggle")
 TrayItemSetOnEvent($menuExit,  "_OnExit")
@@ -34,11 +35,10 @@ _Log("Started. Target: " & $TARGET_CLASS & ", Idle threshold: " & $IDLE_THRESHOL
 
 ; --- Main loop ---
 While True
-    Sleep(250)  ; short sleep just to yield CPU, not for timing
+    Sleep(250)
 
     If $bPaused Then ContinueLoop
 
-    Local $iNow = TimerInit()
     If TimerDiff($iLastCheck) < $CHECK_INTERVAL Then ContinueLoop
     $iLastCheck = TimerInit()
 
