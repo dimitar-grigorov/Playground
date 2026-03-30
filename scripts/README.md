@@ -29,6 +29,43 @@ Ensure that the `ffprobe` and `bc` commands are available on your system. Then, 
 ./calculate_video_duration.sh
 ```
 
+### 3. `sds011-monitor.py`
+
+Interactive controller for the Nova Fitness SDS011 laser dust sensor. Reads PM2.5 and PM10 concentrations over serial (UART at 9600 baud) and classifies readings against WHO 2021 air quality thresholds (good / moderate / unhealthy / hazardous).
+
+#### Requirements
+
+```bash
+pip install pyserial
+```
+
+#### Usage
+
+```bash
+python sds011-monitor.py [COM3 | /dev/ttyUSB0]
+```
+
+The port can be specified as `COM3` or just `3`. If omitted, the script will prompt for it.
+
+#### Menu options
+
+| # | Option | Description |
+|---|--------|-------------|
+| 1 | Measure once | Full cycle: wake -> 30 s warm-up -> read -> sleep |
+| 2 | Optimal mode | Repeated measure cycles at a chosen interval (keeps fan off between readings) |
+| 3 | Live | Continuous stream of readings, Ctrl+C to stop |
+| 4 | Wake | Start the fan and laser |
+| 5 | Query | Single reading (sensor must already be on) |
+| 6 | Sleep | Stop the fan and laser |
+| 7 | Firmware | Show the sensor firmware version |
+| 8 | Working period | Configure hardware duty cycle (stored on sensor, survives power cycles) |
+
+#### Notes
+
+- The SDS011 laser diode has a rated lifespan of ~8000 operating hours. Use **Optimal mode** or **Working period** to duty-cycle the sensor and extend its life.
+- Working period is a hardware setting: `0` = continuous, `1–30` = measure for 30 s then sleep for `(N × 60 − 30)` s. The setting persists after power-off.
+- WHO 2021 thresholds used: PM2.5 — good ≤15, moderate ≤25, unhealthy ≤50, hazardous >50 µg/m³. PM10 — good ≤45, moderate ≤75, unhealthy ≤150, hazardous >150 µg/m³.
+
 ## Planned Scripts
 
 - Additional file processing scripts.
