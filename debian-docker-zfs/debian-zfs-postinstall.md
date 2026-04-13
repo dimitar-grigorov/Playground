@@ -2,6 +2,12 @@
 
 Part 1 (OS + ZFS installation): `debian-zfs-install.md`
 
+Picks up where Part 1 left off. Covers Docker setup, directory layout, volume and
+secrets patterns, and an optional second disk for data-heavy containers. The goal
+is a clean, git-tracked compose setup where credentials never touch the repo,
+volumes land at predictable paths for ZFS snapshots, and adding a new stack is
+straightforward.
+
 ---
 
 - [x] System tools
