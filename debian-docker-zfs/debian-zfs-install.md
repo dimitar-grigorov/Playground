@@ -119,10 +119,12 @@ zpool create \
     bpool ${DISK}-part3
 
 # Root pool — full features
+# zstd is preferred over lz4 since ZFS 2.0: better ratio, similar speed on modern CPUs
+# bpool above must stay lz4 — grub2 compatibility mode doesn't include zstd
 zpool create \
     -o ashift=12 -o autotrim=on \
     -O acltype=posixacl -O xattr=sa -O dnodesize=auto \
-    -O compression=lz4 \
+    -O compression=zstd \
     -O normalization=formD \
     -O relatime=on \
     -O canmount=off -O mountpoint=/ -R /mnt \
@@ -168,8 +170,9 @@ chmod 1777 /mnt/var/tmp
 # Cache is always safe to wipe and gets rebuilt automatically
 zfs create -o com.sun:auto-snapshot=false rpool/var/cache
 
-# Docker images, container layers, and build cache
-# Named volumes go elsewhere (see Part 2) — this is just the engine's working area
+# Docker images, container layers, and build cache live here by default.
+# If you move data-root to /srv/docker in Part 2, this dataset becomes stale
+# and can be destroyed to reclaim space (see Part 2, Step 2).
 zfs create -o com.sun:auto-snapshot=false rpool/var/lib/docker
 
 # Docker compose files and SSD-backed volumes live here
@@ -252,7 +255,7 @@ ls -la /dev/disk/by-id/ | grep -v part | grep -v wwn
 DISK=/dev/disk/by-id/ata-YOUR_DISK_ID
 
 # Timezone
-ln -sf /usr/share/zoneinfo/Europe/Sofia /etc/localtime
+ln -sf /usr/share/zoneinfo/Europe/Sofia /etc/localtime   # timedatectl list-timezones
 dpkg-reconfigure -f noninteractive tzdata
 
 # Locale and console font — the original guide omits both and you end up
@@ -459,38 +462,24 @@ usermod -p '*' root
 
 ## What's Wrong With the Original Guide
 
-The official OpenZFS guide is a solid starting point, but following it literally
-on a fresh Debian Trixie install will get you a system that either doesn't boot
-cleanly or breaks the first time you update a kernel. Here's everything we
-discovered and fixed:
+The official guide works as a starting point but has real gaps. Following it
+literally will break your first kernel update or produce mysterious boot errors.
 
-**Will cause boot failures:**
-- `zfs-import-bpool.service` is never mentioned. The boot pool won't mount on
-  reboot without it, and the failure is silent until you try to update GRUB.
-- `GRUB_CMDLINE_LINUX` is never set. GRUB's auto-detection usually works, but
-  explicit is better than implicit when your root filesystem is ZFS.
-- `update-initramfs -c -k all` isn't called explicitly. Package install hooks
-  don't always catch every kernel.
-
-**Will cause subtle problems:**
-- `zfs-mount-generator` cache (`/etc/zfs/zfs-list.cache/`) is not set up.
-  Services start before ZFS datasets are mounted and you get mysterious errors.
-- `rpool/var/tmp` is not excluded from snapshots. Temporary package manager files
-  inflate your snapshot storage.
-
-**Just missing steps:**
-- `mkdosfs` placed inside chroot, where it may not be available. Moved to Step 4.
-- EFI fstab entry written inside chroot after `$DISK` is gone. Moved to Step 8.
-- `locales` and `console-setup` not installed. You end up with no locale and
-  broken console font.
-- `apt update` not run before package installs inside chroot.
-- `grub-pc` installed instead of `grub-pc-bin`, which conflicts with the EFI
-  packages and breaks the install.
-- `$DISK` variable lost on chroot entry. Now called out explicitly in Step 9.
-- User home directories not created as ZFS datasets. Now done in Step 13.
-- User group list was `sudo` only. Full group list added in Step 13.
-- No installation snapshots taken. Added as Step 14.
-- Root SSH login and password not locked post-install. Added to Step 16.
+| Severity | Issue | Fix |
+|---|---|---|
+| Boot breaks | `zfs-import-bpool.service` missing — bpool won't mount after reboot | Step 10 |
+| Boot breaks | `GRUB_CMDLINE_LINUX` not set — root dataset not explicit | Step 12 |
+| Boot breaks | `update-initramfs -c -k all` not called — some kernels get wrong initramfs | Step 12 |
+| Subtle | `zfs-mount-generator` cache not set up — services start before ZFS mounts | Step 11 |
+| Subtle | `rpool/var/tmp` not excluded from snapshots — package temp files in backups | Step 6 |
+| Missing | `mkdosfs` inside chroot where it may not exist | Step 4 |
+| Missing | EFI fstab written inside chroot after `$DISK` is gone | Step 8 |
+| Missing | `locales` and `console-setup` not installed | Step 9 |
+| Missing | `apt update` not run before package installs in chroot | Step 9 |
+| Missing | `grub-pc` conflicts with `grub-efi` — use `grub-pc-bin` | Step 12 |
+| Missing | `$DISK` lost on chroot entry | Step 9 |
+| Missing | User home not a ZFS dataset, incomplete group list | Step 13 |
+| Missing | No install snapshots, root login not locked | Steps 14, 16 |
 
 ---
 
@@ -501,14 +490,14 @@ homelab platform:
 
 - **Docker** — install from the official apt repo, configure `daemon.json`,
   understand overlay2 on ZFS datasets
-- **Data disk setup** — ZFS pool on NVMe, mounted at `/mnt/data-1tb`
-- **Directory layout** — `/srv/compose/`, `/srv/docker-volumes/`,
-  `/mnt/data-1tb/docker-volumes/`, central `.env` for all paths
+- **Data disk setup** — ZFS pool on second disk, mounted at `/mnt/<pool>`
+- **Directory layout** — `/srv/compose/` (Git repo), `/srv/docker/` (data-root),
+  `/mnt/<pool>/docker/volumes/` for data-heavy stacks, central `.env` for all paths
 - **Sanoid** — automatic snapshots with hourly/daily/weekly rotation,
   pre-apt hook to snapshot before system updates
 - **Syncoid** — push snapshots to a remote server over SSH, recovery from
   replicated snapshots
 - **Container migration** — restore Docker volumes from backup, write
-  `docker-compose.yml` with the `.env` path pattern, no hardcoded paths
+  `compose.yaml` with the `.env` path pattern, no hardcoded paths
   or passwords in compose files or Git
 - **Disaster recovery** — what to actually do when a disk dies
